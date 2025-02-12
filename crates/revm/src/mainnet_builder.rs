@@ -1,12 +1,14 @@
+use circuit_sdk::prelude::WRK17CircuitBuilder;
 use context::{BlockEnv, Cfg, CfgEnv, Context, Evm, EvmData, JournaledState, TxEnv};
 use context_interface::{Block, Database, Journal, Transaction};
+use core::cell::RefCell;
 use database_interface::EmptyDB;
 use handler::{instructions::EthInstructions, noop::NoOpInspector, EthPrecompiles};
 use interpreter::interpreter::EthInterpreter;
 use primitives::Log;
 use specification::hardfork::SpecId;
 use state::EvmState;
-use std::vec::Vec;
+use std::{rc::Rc, vec::Vec};
 
 pub type MainnetEvm<CTX, INSP> =
     Evm<CTX, INSP, EthInstructions<EthInterpreter, CTX>, EthPrecompiles<CTX>>;
@@ -39,6 +41,7 @@ where
             enabled_inspection: false,
             instruction: EthInstructions::default(),
             precompiles: EthPrecompiles::default(),
+            circuit_builder: Rc::new(RefCell::new(WRK17CircuitBuilder::default())),
         }
     }
 
@@ -54,6 +57,7 @@ where
             enabled_inspection: true,
             instruction: EthInstructions::default(),
             precompiles: EthPrecompiles::default(),
+            circuit_builder: Rc::new(RefCell::new(WRK17CircuitBuilder::default())),
         }
     }
 }

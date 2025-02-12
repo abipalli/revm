@@ -1,11 +1,18 @@
+use circuit_sdk::prelude::WRK17CircuitBuilder;
+
 use crate::setters::ContextSetters;
-use core::ops::{Deref, DerefMut};
+use core::{
+    cell::RefCell,
+    ops::{Deref, DerefMut},
+};
+use std::rc::Rc;
 
 pub struct Evm<CTX, INSP, I, P> {
     pub data: EvmData<CTX, INSP>,
     pub enabled_inspection: bool,
     pub instruction: I,
     pub precompiles: P,
+    pub circuit_builder: Rc<RefCell<WRK17CircuitBuilder>>,
 }
 
 pub struct EvmData<CTX, INSP> {
@@ -20,6 +27,7 @@ impl<CTX> Evm<CTX, (), (), ()> {
             enabled_inspection: false,
             instruction: (),
             precompiles: (),
+            circuit_builder: Rc::new(RefCell::new(WRK17CircuitBuilder::default())),
         }
     }
 }
@@ -35,6 +43,7 @@ impl<CTX: ContextSetters, INSP, I, P> Evm<CTX, INSP, I, P> {
             enabled_inspection: self.enabled_inspection,
             instruction: self.instruction,
             precompiles: self.precompiles,
+            circuit_builder: Rc::new(RefCell::new(WRK17CircuitBuilder::default())),
         }
     }
 
@@ -45,6 +54,7 @@ impl<CTX: ContextSetters, INSP, I, P> Evm<CTX, INSP, I, P> {
             enabled_inspection: self.enabled_inspection,
             instruction: self.instruction,
             precompiles,
+            circuit_builder: Rc::new(RefCell::new(WRK17CircuitBuilder::default())),
         }
     }
 
