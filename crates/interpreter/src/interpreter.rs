@@ -1,6 +1,7 @@
 pub mod ext_bytecode;
 mod input;
 mod loop_control;
+mod private_memory;
 mod return_data;
 mod runtime_flags;
 mod shared_memory;
@@ -17,6 +18,7 @@ pub use ext_bytecode::ExtBytecode;
 pub use input::InputsImpl;
 use loop_control::LoopControl as LoopControlImpl;
 use primitives::Bytes;
+pub use private_memory::PrivateMemory;
 use return_data::ReturnDataImpl;
 pub use runtime_flags::RuntimeFlags;
 pub use shared_memory::{num_words, MemoryGetter, SharedMemory, EMPTY_SHARED_MEMORY};

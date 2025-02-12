@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    # binary 
+    # binary
     "bins/revme",
 
     # libraries
@@ -48,6 +48,7 @@ specification = { path = "crates/specification", package = "revm-specification",
 state = { path = "crates/state", package = "revm-state", version = "1.0.0", default-features = false }
 interpreter = { path = "crates/interpreter", package = "revm-interpreter", version = "15.0.0", default-features = false }
 inspector = { path = "crates/inspector", package = "revm-inspector", version = "1.0.0", default-features = false }
+circuit-sdk = { git = "https://github.com/GatewayLabs/circuit-sdk", package = "compute", branch = "main" }
 precompile = { path = "crates/precompile", package = "revm-precompile", version = "16.0.0", default-features = false }
 statetest-types = { path = "crates/statetest-types", package = "revm-statetest-types", version = "1.0.0", default-features = false }
 context = { path = "crates/context", package = "revm-context", version = "1.0.0", default-features = false }

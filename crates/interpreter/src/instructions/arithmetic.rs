@@ -13,6 +13,7 @@ pub fn add<WIRE: InterpreterTypes, H: Host + ?Sized>(
 ) {
     gas!(interpreter, gas::VERYLOW);
     popn_top!([op1], op2, interpreter);
+
     *op2 = op1.wrapping_add(*op2);
 }
 
