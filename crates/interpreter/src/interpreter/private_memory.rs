@@ -1,6 +1,6 @@
 use circuit_sdk::prelude::GateIndexVec;
 use core::{fmt, hash::Hash, mem};
-use primitives::{hex, U256};
+use primitives::{hex, Bytes, U256};
 
 /// Simple mapping from SharedMemory to (Shared)PrivateMemory
 ///
@@ -17,7 +17,7 @@ pub struct PrivateMemoryRef {
 
 const PRIVATE_REF_TAG: &[u8; 4] = b"GATE";
 
-pub(crate) fn is_bytes_private_ref(bytes: &[u8]) -> bool {
+pub fn is_bytes_private_ref(bytes: &Bytes) -> bool {
     if bytes.len() < 4 {
         return false;
     } else {
@@ -55,8 +55,8 @@ impl TryFrom<U256> for PrivateMemoryRef {
     }
 }
 
-pub(crate) fn is_uint_256_private_ref(value: U256) -> bool {
-    let bytes: [u8; 32] = value.to_le_bytes();
+pub fn is_uint_256_private_ref(value: U256) -> bool {
+    let bytes: Bytes = value.to_le_bytes::<32>().into();
     is_bytes_private_ref(&bytes)
 }
 

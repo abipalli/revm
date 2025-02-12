@@ -18,7 +18,9 @@ pub use ext_bytecode::ExtBytecode;
 pub use input::InputsImpl;
 use loop_control::LoopControl as LoopControlImpl;
 use primitives::Bytes;
-pub use private_memory::PrivateMemory;
+pub use private_memory::{
+    is_bytes_private_ref, is_uint_256_private_ref, PrivateMemory, PrivateMemoryRef,
+};
 use return_data::ReturnDataImpl;
 pub use runtime_flags::RuntimeFlags;
 pub use shared_memory::{num_words, MemoryGetter, SharedMemory, EMPTY_SHARED_MEMORY};
@@ -34,6 +36,7 @@ pub struct Interpreter<WIRE: InterpreterTypes> {
     pub stack: WIRE::Stack,
     pub return_data: WIRE::ReturnData,
     pub memory: WIRE::Memory,
+    pub private_memory: Rc<RefCell<PrivateMemory>>, // TODO: Refactor as WIRE::Memory
     pub input: WIRE::Input,
     pub sub_routine: WIRE::SubRoutineStack,
     pub control: WIRE::Control,
@@ -45,6 +48,7 @@ impl<EXT: Default, MG: MemoryGetter> Interpreter<EthInterpreter<EXT, MG>> {
     /// Create new interpreter
     pub fn new(
         memory: Rc<RefCell<MG>>,
+        private_memory: Rc<RefCell<PrivateMemory>>,
         bytecode: ExtBytecode,
         inputs: InputsImpl,
         is_static: bool,
@@ -64,6 +68,7 @@ impl<EXT: Default, MG: MemoryGetter> Interpreter<EthInterpreter<EXT, MG>> {
             stack: Stack::new(),
             return_data: ReturnDataImpl::default(),
             memory,
+            private_memory,
             input: inputs,
             sub_routine: SubRoutineImpl::default(),
             control: LoopControlImpl::new(gas_limit),
@@ -219,6 +224,7 @@ mod tests {
         let bytecode = Bytecode::new_raw(Bytes::from(&[0x60, 0x00, 0x60, 0x00, 0x01][..]));
         let interpreter = Interpreter::<EthInterpreter>::new(
             Rc::new(RefCell::new(SharedMemory::new())),
+            Rc::new(RefCell::new(PrivateMemory::new())),
             ExtBytecode::new(bytecode),
             InputsImpl {
                 target_address: Address::ZERO,

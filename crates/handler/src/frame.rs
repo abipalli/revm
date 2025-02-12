@@ -175,6 +175,7 @@ where
                     result: instruction_result,
                     gas,
                     output: Bytes::new(),
+                    output_guint: None,
                 },
                 memory_offset: inputs.return_memory_offset.clone(),
             })))
@@ -270,6 +271,7 @@ where
             depth,
             Interpreter::new(
                 memory.clone(),
+                private_memory.clone(),
                 ExtBytecode::new_with_hash(bytecode, code_hash),
                 interpreter_input,
                 is_static,
@@ -300,6 +302,7 @@ where
                     result: e,
                     gas: Gas::new(inputs.gas_limit),
                     output: Bytes::new(),
+                    output_guint: None,
                 },
                 address: None,
             })))
@@ -376,6 +379,7 @@ where
             depth,
             Interpreter::new(
                 memory.clone(),
+                private_memory.clone(),
                 bytecode,
                 interpreter_input,
                 false,
@@ -407,6 +411,7 @@ where
                         result: e,
                         gas: Gas::new(inputs.gas_limit),
                         output: Bytes::new(),
+                        output_guint: None,
                     },
                     address: None,
                 },
@@ -494,6 +499,7 @@ where
             depth,
             Interpreter::new(
                 memory.clone(),
+                private_memory.clone(),
                 ExtBytecode::new(Bytecode::Eof(Arc::new(initcode))),
                 interpreter_input,
                 false,

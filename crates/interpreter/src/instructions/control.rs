@@ -1,6 +1,6 @@
 use crate::{
     gas,
-    interpreter::Interpreter,
+    interpreter::{is_bytes_private_ref, Interpreter},
     interpreter_types::{
         EofCodeInfo, Immediates, InterpreterTypes, Jumps, LoopControl, MemoryTrait, RuntimeFlag,
         StackTrait, SubRoutineStack,
@@ -212,10 +212,26 @@ fn return_inner(
     }
 
     let gas = *interpreter.control.gas();
+
+    if is_bytes_private_ref(&output) {
+        return interpreter.control.set_next_action(
+            InterpreterAction::Return {
+                result: InterpreterResult {
+                    output,
+                    output_guint: None,
+                    gas,
+                    result: instruction_result,
+                },
+            },
+            instruction_result,
+        );
+    }
+
     interpreter.control.set_next_action(
         InterpreterAction::Return {
             result: InterpreterResult {
                 output,
+                output_guint: None,
                 gas,
                 result: instruction_result,
             },
