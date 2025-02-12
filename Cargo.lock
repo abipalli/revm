@@ -3779,6 +3779,7 @@ name = "revm-handler"
 version = "1.0.0"
 dependencies = [
  "auto_impl",
+ "compute",
  "revm-bytecode",
  "revm-context",
  "revm-context-interface",

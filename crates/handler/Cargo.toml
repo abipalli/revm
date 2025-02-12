@@ -30,8 +30,9 @@ context.workspace = true
 primitives.workspace = true
 state.workspace = true
 specification.workspace = true
-bytecode.workspace = true 
+bytecode.workspace = true
 auto_impl.workspace = true
+circuit-sdk.workspace = true
 
 # Optional
 serde = { version = "1.0", default-features = false, features = [

@@ -10,6 +10,7 @@ use context_interface::{
     Cfg, Database, Transaction,
 };
 use core::{cell::RefCell, cmp::min};
+use interpreter::interpreter::PrivateMemory;
 use interpreter::{
     gas,
     interpreter::{EthInterpreter, ExtBytecode},
@@ -69,6 +70,7 @@ pub struct EthFrame<CTX, ERROR, IW: InterpreterTypes> {
     pub interpreter: Interpreter<IW>,
     // This is worth making as a generic type FrameSharedContext.
     pub memory: Rc<RefCell<SharedMemory>>,
+    pub private_memory: Rc<RefCell<PrivateMemory>>,
 }
 
 impl<EVM, ERROR> Frame for EthFrame<EVM, ERROR, EthInterpreter<()>>
@@ -130,6 +132,7 @@ where
         interpreter: Interpreter<IW>,
         checkpoint: JournalCheckpoint,
         memory: Rc<RefCell<SharedMemory>>,
+        private_memory: Rc<RefCell<PrivateMemory>>,
     ) -> Self {
         Self {
             phantom: Default::default(),
@@ -139,6 +142,7 @@ where
             interpreter,
             checkpoint,
             memory,
+            private_memory,
         }
     }
 }
@@ -158,6 +162,7 @@ where
         evm: &mut EVM,
         depth: usize,
         memory: Rc<RefCell<SharedMemory>>,
+        private_memory: Rc<RefCell<PrivateMemory>>,
         inputs: Box<CallInputs>,
     ) -> Result<ItemOrResult<Self, FrameResult>, ERROR> {
         let gas = Gas::new(inputs.gas_limit);
@@ -274,6 +279,7 @@ where
             ),
             checkpoint,
             memory,
+            private_memory,
         )))
     }
 
@@ -283,6 +289,7 @@ where
         evm: &mut EVM,
         depth: usize,
         memory: Rc<RefCell<SharedMemory>>,
+        private_memory: Rc<RefCell<PrivateMemory>>,
         inputs: Box<CreateInputs>,
     ) -> Result<ItemOrResult<Self, FrameResult>, ERROR> {
         let context = evm.ctx();
@@ -378,6 +385,7 @@ where
             ),
             checkpoint,
             memory,
+            private_memory,
         )))
     }
 
@@ -387,6 +395,7 @@ where
         evm: &mut EVM,
         depth: usize,
         memory: Rc<RefCell<SharedMemory>>,
+        private_memory: Rc<RefCell<PrivateMemory>>,
         inputs: Box<EOFCreateInputs>,
     ) -> Result<ItemOrResult<Self, FrameResult>, ERROR> {
         let context = evm.ctx();
@@ -494,6 +503,7 @@ where
             ),
             checkpoint,
             memory,
+            private_memory,
         )))
     }
 
@@ -502,11 +512,18 @@ where
         depth: usize,
         frame_init: FrameInput,
         memory: Rc<RefCell<SharedMemory>>,
+        private_memory: Rc<RefCell<PrivateMemory>>,
     ) -> Result<ItemOrResult<Self, FrameResult>, ERROR> {
         match frame_init {
-            FrameInput::Call(inputs) => Self::make_call_frame(evm, depth, memory, inputs),
-            FrameInput::Create(inputs) => Self::make_create_frame(evm, depth, memory, inputs),
-            FrameInput::EOFCreate(inputs) => Self::make_eofcreate_frame(evm, depth, memory, inputs),
+            FrameInput::Call(inputs) => {
+                Self::make_call_frame(evm, depth, memory, private_memory, inputs)
+            }
+            FrameInput::Create(inputs) => {
+                Self::make_create_frame(evm, depth, memory, private_memory, inputs)
+            }
+            FrameInput::EOFCreate(inputs) => {
+                Self::make_eofcreate_frame(evm, depth, memory, private_memory, inputs)
+            }
         }
     }
 }
@@ -529,6 +546,7 @@ where
         frame_input: FrameInput,
     ) -> Result<ItemOrResult<Self, FrameResult>, ERROR> {
         let memory = Rc::new(RefCell::new(SharedMemory::new()));
+        let private_memory = Rc::new(RefCell::new(PrivateMemory::new()));
         let (context, precompiles) = evm.ctx_precompiles();
         precompiles.set_spec(context.cfg().spec());
         context
@@ -536,7 +554,7 @@ where
             .warm_precompiles(precompiles.warm_addresses().collect());
 
         memory.borrow_mut().new_context();
-        Self::init_with_context(evm, 0, frame_input, memory)
+        Self::init_with_context(evm, 0, frame_input, memory, private_memory)
     }
 
     fn init(
@@ -545,7 +563,13 @@ where
         frame_init: FrameInput,
     ) -> Result<ItemOrResult<Self, FrameResult>, ERROR> {
         self.memory.borrow_mut().new_context();
-        Self::init_with_context(context, self.depth + 1, frame_init, self.memory.clone())
+        Self::init_with_context(
+            context,
+            self.depth + 1,
+            frame_init,
+            self.memory.clone(),
+            self.private_memory.clone(),
+        )
     }
 
     pub fn run_frame(

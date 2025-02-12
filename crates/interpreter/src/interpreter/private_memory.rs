@@ -62,7 +62,7 @@ pub(crate) fn is_uint_256_private_ref(value: U256) -> bool {
 
 #[derive(Clone, Debug, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-enum PrivateMemoryValue {
+pub enum PrivateMemoryValue {
     Private(GateIndexVec),
 }
 
